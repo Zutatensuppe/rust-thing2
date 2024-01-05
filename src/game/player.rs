@@ -25,7 +25,7 @@ impl Player {
         self.pos += speed;
 
         // keep player on non-solid blocks
-        if Level::is_solid_at(lvl, self.pos) {
+        if lvl.is_solid_at(self.pos) {
             // put player back where they were
             self.pos -= speed;
         }
@@ -40,7 +40,7 @@ impl Player {
         self.pos += speed;
 
         // keep player on non-solid blocks
-        if Level::is_solid_at(lvl, self.pos) {
+        if lvl.is_solid_at(self.pos) {
             // put player back where they were
             self.pos -= speed;
         }

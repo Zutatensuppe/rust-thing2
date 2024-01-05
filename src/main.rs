@@ -47,7 +47,10 @@ async fn main() {
     };
 
     let mut player = Player {
-        pos: vec2(world.dim.x / 2., world.dim.y / 2.),
+        pos: vec2(
+            (world.dim.x + TILE_SIZE) / 2.,
+            (world.dim.y + TILE_SIZE) / 2.,
+        ),
         dim: vec2(cat.width(), cat.height()),
         light_radius: 4,
     };
@@ -135,14 +138,14 @@ async fn main() {
         }
 
         // debug tiles in each direction of player tile
-        let idx = Level::tile_index_at(&lvl, player.pos);
+        let idx = lvl.tile_index_at(player.pos);
         if let Some(idx) = idx {
-            let above = Level::tile_index_above(&lvl, idx);
-            let below = Level::tile_index_below(&lvl, idx);
-            let left = Level::tile_index_left(&lvl, idx);
-            let right = Level::tile_index_right(&lvl, idx);
+            let above = lvl.tile_index_above(idx);
+            let below = lvl.tile_index_below(idx);
+            let left = lvl.tile_index_left(idx);
+            let right = lvl.tile_index_right(idx);
             if let Some(above) = above {
-                let pos = Level::pos_by_index(&lvl, above);
+                let pos = lvl.pos_by_index(above);
                 draw_rectangle_lines(
                     pos.x * TILE_SIZE - camera.pos.x + off_x,
                     pos.y * TILE_SIZE - camera.pos.y + off_y,
@@ -153,7 +156,7 @@ async fn main() {
                 );
             }
             if let Some(below) = below {
-                let pos = Level::pos_by_index(&lvl, below);
+                let pos = lvl.pos_by_index(below);
                 draw_rectangle_lines(
                     pos.x * TILE_SIZE - camera.pos.x + off_x,
                     pos.y * TILE_SIZE - camera.pos.y + off_y,
@@ -164,7 +167,7 @@ async fn main() {
                 );
             }
             if let Some(left) = left {
-                let pos = Level::pos_by_index(&lvl, left);
+                let pos = lvl.pos_by_index(left);
                 draw_rectangle_lines(
                     pos.x * TILE_SIZE - camera.pos.x + off_x,
                     pos.y * TILE_SIZE - camera.pos.y + off_y,
@@ -175,7 +178,7 @@ async fn main() {
                 );
             }
             if let Some(right) = right {
-                let pos = Level::pos_by_index(&lvl, right);
+                let pos = lvl.pos_by_index(right);
                 draw_rectangle_lines(
                     pos.x * TILE_SIZE - camera.pos.x + off_x,
                     pos.y * TILE_SIZE - camera.pos.y + off_y,

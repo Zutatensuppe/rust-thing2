@@ -71,71 +71,71 @@ impl Level {
         }
     }
 
-    pub fn is_solid_at(lvl: &Self, pos: Vec2) -> bool {
-        let index = Self::tile_index_at(lvl, pos);
+    pub fn is_solid_at(&self, pos: Vec2) -> bool {
+        let index = self.tile_index_at(pos);
         if let Some(index) = index {
-            return lvl.tiles[index].solid;
+            return self.tiles[index].solid;
         }
 
         false
     }
 
-    pub fn tile_index_at(lvl: &Self, pos: Vec2) -> Option<usize> {
+    pub fn tile_index_at(&self, pos: Vec2) -> Option<usize> {
         let x_index = pos.x as usize / TILE_SIZE as usize;
         let y_index = pos.y as usize / TILE_SIZE as usize;
 
-        let index = y_index * lvl.width + x_index;
-        if index < lvl.tiles.len() {
+        let index = y_index * self.width + x_index;
+        if index < self.tiles.len() {
             return Some(index);
         }
         None
     }
 
-    pub fn tile_index_above(lvl: &Self, tile_index: usize) -> Option<usize> {
-        if tile_index >= lvl.width {
-            return Some(tile_index - lvl.width);
+    pub fn tile_index_above(&self, tile_index: usize) -> Option<usize> {
+        if tile_index >= self.width {
+            return Some(tile_index - self.width);
         }
 
         None
     }
 
-    pub fn tile_index_below(lvl: &Self, tile_index: usize) -> Option<usize> {
-        if tile_index + lvl.width < lvl.tiles.len() {
-            return Some(tile_index + lvl.width);
+    pub fn tile_index_below(&self, tile_index: usize) -> Option<usize> {
+        if tile_index + self.width < self.tiles.len() {
+            return Some(tile_index + self.width);
         }
 
         None
     }
 
-    pub fn tile_index_left(lvl: &Self, tile_index: usize) -> Option<usize> {
-        if tile_index % lvl.width != 0 {
+    pub fn tile_index_left(&self, tile_index: usize) -> Option<usize> {
+        if tile_index % self.width != 0 {
             return Some(tile_index - 1);
         }
 
         None
     }
 
-    pub fn tile_index_right(lvl: &Self, tile_index: usize) -> Option<usize> {
-        if (tile_index + 1) % lvl.width != 0 {
+    pub fn tile_index_right(&self, tile_index: usize) -> Option<usize> {
+        if (tile_index + 1) % self.width != 0 {
             return Some(tile_index + 1);
         }
 
         None
     }
 
-    pub fn pos_by_index(lvl: &Self, tile_index: usize) -> Vec2 {
-        let y = tile_index / lvl.width;
-        let x = tile_index % lvl.width;
+    pub fn pos_by_index(&self, tile_index: usize) -> Vec2 {
+        let y = tile_index / self.width;
+        let x = tile_index % self.width;
         vec2(x as f32, y as f32)
     }
 
     pub fn update(mut self, player: &Player) -> Self {
         // reveal fog of war around the player (in a very weird way :/)
-        let player_tile_index = Level::tile_index_at(&self, player.pos);
+        let player_tile_index = self.tile_index_at(player.pos);
         if let Some(player_tile_index) = player_tile_index {
-            let player_tile_pos = Level::pos_by_index(&self, player_tile_index);
+            let player_tile_pos = self.pos_by_index(player_tile_index);
             for i in 0..self.tiles.len() {
-                let tile_pos = Level::pos_by_index(&self, i);
+                let tile_pos = self.pos_by_index(i);
                 if player_tile_pos.distance(tile_pos) < player.light_radius as f32 {
                     self.tiles[i].fog = false;
                 }
