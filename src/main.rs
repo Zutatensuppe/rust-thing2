@@ -140,12 +140,8 @@ async fn main() {
         // debug tiles in each direction of player tile
         let idx = lvl.tile_index_at(player.pos);
         if let Some(idx) = idx {
-            let above = lvl.tile_index_above(idx);
-            let below = lvl.tile_index_below(idx);
-            let left = lvl.tile_index_left(idx);
-            let right = lvl.tile_index_right(idx);
-            if let Some(above) = above {
-                let pos = lvl.pos_by_index(above);
+            if let Some(idx) = lvl.tile_index_above(idx) {
+                let pos = lvl.pos_by_index(idx);
                 draw_rectangle_lines(
                     pos.x * TILE_SIZE - camera.pos.x + off_x,
                     pos.y * TILE_SIZE - camera.pos.y + off_y,
@@ -155,8 +151,8 @@ async fn main() {
                     WHITE,
                 );
             }
-            if let Some(below) = below {
-                let pos = lvl.pos_by_index(below);
+            if let Some(idx) = lvl.tile_index_below(idx) {
+                let pos = lvl.pos_by_index(idx);
                 draw_rectangle_lines(
                     pos.x * TILE_SIZE - camera.pos.x + off_x,
                     pos.y * TILE_SIZE - camera.pos.y + off_y,
@@ -166,8 +162,8 @@ async fn main() {
                     RED,
                 );
             }
-            if let Some(left) = left {
-                let pos = lvl.pos_by_index(left);
+            if let Some(idx) = lvl.tile_index_left(idx) {
+                let pos = lvl.pos_by_index(idx);
                 draw_rectangle_lines(
                     pos.x * TILE_SIZE - camera.pos.x + off_x,
                     pos.y * TILE_SIZE - camera.pos.y + off_y,
@@ -177,8 +173,8 @@ async fn main() {
                     BLUE,
                 );
             }
-            if let Some(right) = right {
-                let pos = lvl.pos_by_index(right);
+            if let Some(idx) = lvl.tile_index_right(idx) {
+                let pos = lvl.pos_by_index(idx);
                 draw_rectangle_lines(
                     pos.x * TILE_SIZE - camera.pos.x + off_x,
                     pos.y * TILE_SIZE - camera.pos.y + off_y,
