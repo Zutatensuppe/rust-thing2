@@ -1,6 +1,6 @@
 use macroquad::prelude::*;
 
-use super::player::Player;
+use super::{player::Player, Game};
 
 pub struct World {
     pub dim: Vec2,
@@ -28,8 +28,13 @@ impl TileTexture {
     }
 }
 
+pub enum FogLevel {
+    Opaque,
+    HalfTransparent,
+    Transparent,
+}
 pub struct Tile {
-    pub fog: bool,
+    pub fog: FogLevel,
     pub solid: bool,
     pub texture: TileTexture,
 }
@@ -37,7 +42,7 @@ pub struct Tile {
 impl Tile {
     fn from_char(ch: char) -> Self {
         Self {
-            fog: true,
+            fog: FogLevel::Opaque,
             solid: !matches!(ch, 'c' | 'd'),
             texture: TileTexture::from_char(ch),
         }
@@ -75,6 +80,18 @@ impl Level {
         let index = self.tile_index_at(pos);
         if let Some(index) = index {
             return self.tiles[index].solid;
+        }
+
+        false
+    }
+
+    pub fn is_fog_of_war_at(&self, pos: Vec2) -> bool {
+        let index = self.tile_index_at(pos);
+        if let Some(index) = index {
+            return match self.tiles[index].fog {
+                FogLevel::Opaque | FogLevel::HalfTransparent => true,
+                _ => false,
+            };
         }
 
         false
@@ -128,19 +145,36 @@ impl Level {
         let x = tile_index % self.width;
         vec2(x as f32, y as f32)
     }
+}
 
-    pub fn update(mut self, player: &Player) -> Self {
+impl<'a> Game<'a> {
+    pub(super) fn update_level(&mut self) {
+        let lvl = &mut self.lvl;
+
+        let player = &self.player;
+
         // reveal fog of war around the player (in a very weird way :/)
-        let player_tile_index = self.tile_index_at(player.pos);
+        let player_tile_index = lvl.tile_index_at(player.pos);
         if let Some(player_tile_index) = player_tile_index {
-            let player_tile_pos = self.pos_by_index(player_tile_index);
-            for i in 0..self.tiles.len() {
-                let tile_pos = self.pos_by_index(i);
-                if player_tile_pos.distance(tile_pos) < player.light_radius as f32 {
-                    self.tiles[i].fog = false;
+            let player_tile_pos = lvl.pos_by_index(player_tile_index);
+            for i in 0..lvl.tiles.len() {
+                match lvl.tiles[i].fog {
+                    FogLevel::HalfTransparent | FogLevel::Opaque => {
+                        let tile_pos = lvl.pos_by_index(i);
+                        if player_tile_pos.distance(tile_pos) < player.light_radius as f32 {
+                            lvl.tiles[i].fog = FogLevel::Transparent;
+                        }
+                    }
+                    FogLevel::Transparent => {
+                        let tile_pos = lvl.pos_by_index(i);
+                        if player_tile_pos.distance(tile_pos) < player.light_radius as f32 {
+                            // stay transparent
+                        } else {
+                            lvl.tiles[i].fog = FogLevel::HalfTransparent;
+                        }
+                    }
                 }
             }
         }
-        self
     }
 }
