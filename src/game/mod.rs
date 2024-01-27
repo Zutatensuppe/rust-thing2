@@ -11,9 +11,12 @@ use self::{
 pub mod camera;
 pub mod controls;
 pub mod enemy;
+pub mod entity;
 pub mod gfx;
+pub mod inventory;
 pub mod level;
 pub mod player;
+pub mod resources;
 
 pub struct Game<'a> {
     pub lvl: Level,

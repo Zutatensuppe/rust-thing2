@@ -1,17 +1,43 @@
 use macroquad::prelude::*;
 
-use super::gfx::StaticSprite;
+use super::{
+    enemy::Enemy,
+    entity::{collides, Entity},
+    gfx::StaticSprite,
+    inventory::Inventory,
+};
 
 pub struct Player<'a> {
     pub pos: Vec2,
     pub dim: Vec2,
     pub light_radius: usize,
     pub sprite: StaticSprite<'a>,
+    pub inventory: Inventory,
+}
+
+impl<'a> Entity for Player<'a> {
+    fn dim(&self) -> Vec2 {
+        self.dim
+    }
+
+    fn pos(&self) -> Vec2 {
+        self.pos
+    }
+}
+
+fn collides_any(player: &Player, enemies: &Vec<Enemy>) -> bool {
+    for enemy in enemies {
+        if collides(player, enemy) {
+            return true;
+        }
+    }
+    false
 }
 
 impl<'a> super::Game<'a> {
     pub(super) fn update_player(&mut self) {
         let player = &mut self.player;
+        let enemies = &self.enemies;
 
         let controls = &self.controls;
         let lvl = &self.lvl;
@@ -33,7 +59,7 @@ impl<'a> super::Game<'a> {
         player.pos += speed;
 
         // keep player on non-solid blocks
-        if lvl.is_solid_at(player.pos) {
+        if lvl.is_solid_at(player.pos) || collides_any(player, enemies) {
             // put player back where they were
             player.pos -= speed;
         }
@@ -48,12 +74,9 @@ impl<'a> super::Game<'a> {
         player.pos += speed;
 
         // keep player on non-solid blocks
-        if lvl.is_solid_at(player.pos) {
+        if lvl.is_solid_at(player.pos) || collides_any(player, enemies) {
             // put player back where they were
             player.pos -= speed;
         }
-
-        // self.pos.x = clamp(self.pos.x, self.dim.x / 2., lvl.dim.x - self.dim.x / 2.);
-        // self.pos.y = clamp(self.pos.y, self.dim.y / 2., lvl.dim.y - self.dim.y / 2.);
     }
 }

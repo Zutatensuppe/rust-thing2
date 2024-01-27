@@ -1,6 +1,12 @@
 use macroquad::prelude::*;
 
-use super::{gfx::AnimatedSprite, level::TILE_SIZE};
+use super::{
+    entity::{collides, Entity},
+    gfx::{AnimatedSprite, Frame},
+    level::TILE_SIZE,
+    player::Player,
+    resources::Resources,
+};
 
 pub enum EnemyStrategy {
     FollowPlayer,
@@ -18,21 +24,14 @@ pub struct Enemy<'a> {
     pub speed_solid: f32,
 }
 
-fn collides(enemy1: &Enemy, enemy2: &Enemy) -> bool {
-    let rect1 = Rect {
-        x: enemy1.pos.x - (enemy1.dim.x / 2.),
-        y: enemy1.pos.y - (enemy1.dim.y / 2.),
-        w: enemy1.dim.x,
-        h: enemy1.dim.y,
-    };
-    let rect2 = Rect {
-        x: enemy2.pos.x - (enemy2.dim.x / 2.),
-        y: enemy2.pos.y - (enemy2.dim.y / 2.),
-        w: enemy2.dim.x,
-        h: enemy2.dim.y,
-    };
+impl<'a> Entity for Enemy<'a> {
+    fn dim(&self) -> Vec2 {
+        self.dim
+    }
 
-    rect1.overlaps(&rect2)
+    fn pos(&self) -> Vec2 {
+        self.pos
+    }
 }
 
 fn collides_any(i: usize, enemies: &Vec<Enemy>) -> bool {
@@ -65,7 +64,10 @@ impl<'a> super::Game<'a> {
                     enemies[i].pos.y += enemies[i].dir.y;
 
                     // keep player on non-solid blocks
-                    if lvl.is_solid_at(enemies[i].pos) || collides_any(i, enemies) {
+                    if lvl.is_solid_at(enemies[i].pos)
+                        || collides_any(i, enemies)
+                        || collides(player, &enemies[i])
+                    {
                         // put player back where they were, then reverse direction
                         enemies[i].pos.y -= enemies[i].dir.y;
                         enemies[i].dir.y *= -1.;
@@ -80,9 +82,11 @@ impl<'a> super::Game<'a> {
 
                     enemies[i].pos.x += enemies[i].dir.x;
 
-                    // keep player on non-solid blocks
-                    if lvl.is_solid_at(enemies[i].pos) || collides_any(i, enemies) {
-                        // put player back where they were, then reverse direction
+                    if lvl.is_solid_at(enemies[i].pos)
+                        || collides_any(i, enemies)
+                        || collides(player, &enemies[i])
+                    {
+                        // put back where they were, then reverse direction
                         enemies[i].pos.x -= enemies[i].dir.x;
                         enemies[i].dir.x *= -1.;
                     }
@@ -112,11 +116,11 @@ impl<'a> super::Game<'a> {
 
                         enemies[i].pos += speed;
 
-                        // keep player on non-solid blocks
                         if (!ignore_solid_checks && lvl.is_solid_at(enemies[i].pos))
                             || collides_any(i, enemies)
+                            || collides(player, &enemies[i])
                         {
-                            // put player back where they were
+                            // put back where they were
                             enemies[i].pos -= speed;
                         }
 
@@ -129,11 +133,11 @@ impl<'a> super::Game<'a> {
 
                         enemies[i].pos += speed;
 
-                        // keep player on non-solid blocks
                         if (!ignore_solid_checks && lvl.is_solid_at(enemies[i].pos))
                             || collides_any(i, enemies)
+                            || collides(player, &enemies[i])
                         {
-                            // put player back where they were
+                            // put back where they were
                             enemies[i].pos -= speed;
                         }
                     }
@@ -142,5 +146,46 @@ impl<'a> super::Game<'a> {
 
             enemies[i].sprite.update();
         }
+    }
+}
+
+pub fn create_enemy(name: String, pos: Vec2, res: &Resources) -> Enemy {
+    let def = res.enemy_definitions.get(&name).unwrap();
+    let tex = res.textures.get(&def.sprite.texture).unwrap();
+
+    let mut frames = vec![];
+    for frame_def in &def.sprite.frames {
+        frames.push(Frame {
+            texture: tex,
+            dest_size: vec2(TILE_SIZE, TILE_SIZE),
+            source_rect: Rect {
+                x: frame_def.x,
+                y: frame_def.y,
+                w: TILE_SIZE,
+                h: TILE_SIZE,
+            },
+        })
+    }
+
+    let strategy = match def.strategy.as_str() {
+        "followPlayer" => EnemyStrategy::FollowPlayer,
+        "verticalPatrol" => EnemyStrategy::VerticalPatrol,
+        "horizontalPatrol" => EnemyStrategy::HorizontalPatrol,
+        _ => panic!("invalid enemy strategy"),
+    };
+
+    Enemy {
+        speed: def.speed,
+        speed_solid: def.speed_solid,
+        strategy,
+        pos,
+        dim: vec2(TILE_SIZE, TILE_SIZE),
+        sprite: AnimatedSprite {
+            frames,
+            fps: def.sprite.fps,
+            frame_index: 0,
+            time: 0.,
+        },
+        dir: vec2(0., 0.),
     }
 }

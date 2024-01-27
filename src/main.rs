@@ -1,11 +1,15 @@
 mod game;
 
+use std::collections::HashMap;
+
 use game::camera::GameCamera;
 use game::controls::Controls;
-use game::enemy::{Enemy, EnemyStrategy};
+use game::enemy::{create_enemy, Enemy, EnemyStrategy};
 use game::gfx::{AnimatedSprite, Frame, StaticSprite};
+use game::inventory::Inventory;
 use game::level::{FogLevel, Level, World, TILE_SIZE};
 use game::player::Player;
+use game::resources::{load_enemy_definitions, load_tile_definitions, Resources};
 use game::Game;
 use macroquad::prelude::*;
 
@@ -25,94 +29,6 @@ const FOX_OFFSET: f32 = 32.;
 const HYOTTOKO_OFFSET: f32 = 64.;
 const SPIDER_OFFSET: f32 = 96.;
 
-fn create_blob(x: f32, y: f32, spritepack: &Texture2D) -> Enemy {
-    Enemy {
-        speed: 2.,
-        speed_solid: 0.,
-        strategy: EnemyStrategy::VerticalPatrol,
-        pos: vec2(x, y),
-        dim: vec2(TILE_SIZE, TILE_SIZE),
-        sprite: AnimatedSprite {
-            frames: vec![
-                Frame {
-                    texture: spritepack,
-                    source_rect: Rect {
-                        x: BLOB_OFFSET,
-                        y: 0.,
-                        w: TILE_SIZE,
-                        h: TILE_SIZE,
-                    },
-                    dest_size: Vec2 {
-                        x: TILE_SIZE,
-                        y: TILE_SIZE,
-                    },
-                },
-                Frame {
-                    texture: spritepack,
-                    source_rect: Rect {
-                        x: BLOB_OFFSET,
-                        y: TILE_SIZE,
-                        w: TILE_SIZE,
-                        h: TILE_SIZE,
-                    },
-                    dest_size: Vec2 {
-                        x: TILE_SIZE,
-                        y: TILE_SIZE,
-                    },
-                },
-            ],
-            fps: 5,
-            frame_index: 0,
-            time: 0.,
-        },
-        dir: vec2(0., 0.),
-    }
-}
-
-fn create_spider(x: f32, y: f32, spritepack: &Texture2D) -> Enemy {
-    Enemy {
-        strategy: EnemyStrategy::FollowPlayer,
-        speed: 1.,
-        speed_solid: 0.5,
-        pos: vec2(x, y),
-        dim: vec2(TILE_SIZE, TILE_SIZE),
-        sprite: AnimatedSprite {
-            frames: vec![
-                Frame {
-                    texture: spritepack,
-                    source_rect: Rect {
-                        x: SPIDER_OFFSET,
-                        y: 0.,
-                        w: TILE_SIZE,
-                        h: TILE_SIZE,
-                    },
-                    dest_size: Vec2 {
-                        x: TILE_SIZE,
-                        y: TILE_SIZE,
-                    },
-                },
-                Frame {
-                    texture: spritepack,
-                    source_rect: Rect {
-                        x: SPIDER_OFFSET,
-                        y: TILE_SIZE,
-                        w: TILE_SIZE,
-                        h: TILE_SIZE,
-                    },
-                    dest_size: Vec2 {
-                        x: TILE_SIZE,
-                        y: TILE_SIZE,
-                    },
-                },
-            ],
-            fps: 5,
-            frame_index: 0,
-            time: 0.,
-        },
-        dir: vec2(0., 0.),
-    }
-}
-
 fn draw_frame(frame: &Frame, x: f32, y: f32) {
     draw_texture_ex(
         frame.texture,
@@ -129,17 +45,16 @@ fn draw_frame(frame: &Frame, x: f32, y: f32) {
 
 #[macroquad::main(window_conf)]
 async fn main() {
-    // let dragon: Texture2D = load_texture("resources/dragon_drawchan.png").await.unwrap();
-    let a: Texture2D = load_texture("resources/a.png").await.unwrap();
-    let b: Texture2D = load_texture("resources/b.png").await.unwrap();
-    let c: Texture2D = load_texture("resources/c.png").await.unwrap();
-    let d: Texture2D = load_texture("resources/d.png").await.unwrap();
+    let mut res = Resources {
+        enemy_definitions: load_enemy_definitions().await,
+        tile_defintions: load_tile_definitions().await,
+        textures: HashMap::new(),
+    };
+
+    res = res.load_textures().await;
+
     let fog: Texture2D = load_texture("resources/fog.png").await.unwrap();
     let fog_half_transparent: Texture2D = load_texture("resources/fog_half_transparent.png")
-        .await
-        .unwrap();
-
-    let spritepack = load_texture("resources/sprites_for_para.png")
         .await
         .unwrap();
 
@@ -172,7 +87,7 @@ async fn main() {
         light_radius: 4,
         sprite: StaticSprite {
             frame: Frame {
-                texture: &spritepack,
+                texture: res.textures.get("sprites_for_para.png").unwrap(),
                 source_rect: Rect {
                     x: HYOTTOKO_OFFSET,
                     y: 0.,
@@ -184,6 +99,17 @@ async fn main() {
                     y: TILE_SIZE,
                 },
             },
+        },
+        inventory: Inventory {
+            amulet: None,
+            head: None,
+            body: None,
+            arm1: None,
+            arm2: None,
+            ring1: None,
+            ring2: None,
+            belt: None,
+            foot: None,
         },
     };
 
@@ -213,14 +139,15 @@ async fn main() {
         camera,
     };
 
-    game.add_enemy(create_blob(200., 200., &spritepack));
-    game.add_enemy(create_blob(200., 300., &spritepack));
-    game.add_enemy(create_blob(600., 200., &spritepack));
-    game.add_enemy(create_blob(700., 500., &spritepack));
-    game.add_enemy(create_spider(400., 200., &spritepack));
-    game.add_enemy(create_spider(500., 200., &spritepack));
-    game.add_enemy(create_spider(800., 200., &spritepack));
-    game.add_enemy(create_spider(800., 500., &spritepack));
+    game.add_enemy(create_enemy("Blob".to_string(), vec2(200., 200.), &res));
+    game.add_enemy(create_enemy("Blob".to_string(), vec2(200., 300.), &res));
+    game.add_enemy(create_enemy("Blob".to_string(), vec2(600., 200.), &res));
+    game.add_enemy(create_enemy("Blob".to_string(), vec2(700., 500.), &res));
+    game.add_enemy(create_enemy("Spider".to_string(), vec2(400., 200.), &res));
+    game.add_enemy(create_enemy("Spider".to_string(), vec2(500., 200.), &res));
+    game.add_enemy(create_enemy("Spider".to_string(), vec2(800., 200.), &res));
+    game.add_enemy(create_enemy("Spider".to_string(), vec2(800., 500.), &res));
+    game.add_enemy(create_enemy("Fox".to_string(), vec2(600., 300.), &res));
 
     loop {
         // draw everything
@@ -235,13 +162,7 @@ async fn main() {
                 let tile = &game.lvl.tiles[idx];
                 match tile.fog {
                     FogLevel::HalfTransparent | FogLevel::Transparent => {
-                        let tex = match tile.texture {
-                            game::level::TileTexture::A => Some(&a),
-                            game::level::TileTexture::B => Some(&b),
-                            game::level::TileTexture::C => Some(&c),
-                            game::level::TileTexture::D => Some(&d),
-                            _ => None,
-                        };
+                        let tex = res.tile_texture(tile.ch);
                         if let Some(tex) = tex {
                             draw_texture(
                                 tex,

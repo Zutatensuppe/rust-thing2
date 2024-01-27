@@ -1,0 +1,8 @@
+[
+    { "name": "Black Wall", "ch": "a", "texture": "a.png", "solid": true },
+    { "name": "Blue Wall", "ch": "b", "texture": "b.png", "solid": true },
+    { "name": "Floor", "ch": "c", "texture": "c.png", "solid": false },
+    { "name": "Green Blocks", "ch": "d", "texture": "d.png", "solid": false },
+    { "name": "Stuff 1", "ch": "e", "texture": "e.png", "solid": false },
+    { "name": "Stuff 2", "ch": "f", "texture": "f.png", "solid": false }
+]

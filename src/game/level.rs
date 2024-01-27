@@ -1,32 +1,12 @@
 use macroquad::prelude::*;
 
-use super::{player::Player, Game};
+use super::Game;
 
 pub struct World {
     pub dim: Vec2,
 }
 
 pub const TILE_SIZE: f32 = 32.;
-
-pub enum TileTexture {
-    None,
-    A,
-    B,
-    C,
-    D,
-}
-
-impl TileTexture {
-    fn from_char(ch: char) -> Self {
-        match ch {
-            'a' => Self::A,
-            'b' => Self::B,
-            'c' => Self::C,
-            'd' => Self::D,
-            _ => Self::None,
-        }
-    }
-}
 
 pub enum FogLevel {
     Opaque,
@@ -36,15 +16,15 @@ pub enum FogLevel {
 pub struct Tile {
     pub fog: FogLevel,
     pub solid: bool,
-    pub texture: TileTexture,
+    pub ch: char,
 }
 
 impl Tile {
     fn from_char(ch: char) -> Self {
         Self {
             fog: FogLevel::Opaque,
-            solid: !matches!(ch, 'c' | 'd'),
-            texture: TileTexture::from_char(ch),
+            solid: !matches!(ch, 'c' | 'd' | 'e' | 'f'),
+            ch,
         }
     }
 }
@@ -88,10 +68,10 @@ impl Level {
     pub fn is_fog_of_war_at(&self, pos: Vec2) -> bool {
         let index = self.tile_index_at(pos);
         if let Some(index) = index {
-            return match self.tiles[index].fog {
-                FogLevel::Opaque | FogLevel::HalfTransparent => true,
-                _ => false,
-            };
+            return matches!(
+                self.tiles[index].fog,
+                FogLevel::Opaque | FogLevel::HalfTransparent
+            );
         }
 
         false

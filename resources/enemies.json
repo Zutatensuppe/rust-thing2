@@ -1,0 +1,43 @@
+[
+    {
+        "name": "Spider",
+        "strategy": "followPlayer",
+        "speed": 1,
+        "speed_solid": 0.5,
+        "sprite": {
+            "texture": "sprites_for_para.png", 
+            "frames": [
+                { "x": 96, "y": 0 },
+                { "x": 96, "y": 32 }
+            ],
+            "fps": 5
+        }
+    },
+    {
+        "name": "Blob",
+        "strategy": "verticalPatrol",
+        "speed": 2,
+        "speed_solid": 0,
+        "sprite": {
+            "texture": "sprites_for_para.png", 
+            "frames": [
+                { "x": 0, "y": 0 },
+                { "x": 0, "y": 32 }
+            ],
+            "fps": 5
+        }
+    },
+    {
+        "name": "Fox",
+        "strategy": "horizontalPatrol",
+        "speed": 3,
+        "speed_solid": 0,
+        "sprite": {
+            "texture": "sprites_for_para.png", 
+            "frames": [
+                { "x": 32, "y": 0 }
+            ],
+            "fps": 5
+        }
+    }
+]
