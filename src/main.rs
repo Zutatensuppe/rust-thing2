@@ -5,10 +5,10 @@ use std::collections::HashMap;
 use game::camera::GameCamera;
 use game::controls::Controls;
 use game::enemy::{create_enemy, Enemy, EnemyStrategy};
-use game::gfx::{AnimatedSprite, Frame, StaticSprite};
+use game::gfx::{Frame, StaticSprite};
 use game::inventory::Inventory;
 use game::level::{FogLevel, Level, World, TILE_SIZE};
-use game::player::Player;
+use game::player::{Ability, Player};
 use game::resources::{load_enemy_definitions, load_tile_definitions, Resources};
 use game::Game;
 use macroquad::prelude::*;
@@ -24,10 +24,39 @@ fn window_conf() -> Conf {
     }
 }
 
-const BLOB_OFFSET: f32 = 0.;
-const FOX_OFFSET: f32 = 32.;
 const HYOTTOKO_OFFSET: f32 = 64.;
-const SPIDER_OFFSET: f32 = 96.;
+
+fn draw_enemy(enemy: &Enemy, game_off: Vec2, is_in_fog: bool) {
+    if !enemy.fog_of_war || !is_in_fog {
+        draw_frame(
+            &enemy.sprite.frames[enemy.sprite.frame_index],
+            enemy.pos.x - (enemy.dim.x / 2.) + game_off.x,
+            enemy.pos.y - (enemy.dim.y / 2.) + game_off.y,
+        );
+    }
+
+    if !is_in_fog
+        && !matches!(enemy.strategy, EnemyStrategy::Projectile)
+        && enemy.hp != enemy.hp_max
+    {
+        // max hp red
+        draw_rectangle(
+            enemy.pos.x - (enemy.dim.x / 2.) + game_off.x,
+            enemy.pos.y - (enemy.dim.y / 2.) - 10. + game_off.y,
+            enemy.dim.x,
+            5.,
+            RED,
+        );
+        // current hp green
+        draw_rectangle(
+            enemy.pos.x - (enemy.dim.x / 2.) + game_off.x,
+            enemy.pos.y - (enemy.dim.y / 2.) - 10. + game_off.y,
+            enemy.dim.x * (enemy.hp as f32) / (enemy.hp_max as f32),
+            5.,
+            LIME,
+        );
+    }
+}
 
 fn draw_frame(frame: &Frame, x: f32, y: f32) {
     draw_texture_ex(
@@ -76,6 +105,8 @@ async fn main() {
         is_down: false,
         is_left: false,
         is_right: false,
+        is_q: false,
+        mouse_pos: vec2(0., 0.),
     };
 
     let player = Player {
@@ -111,18 +142,18 @@ async fn main() {
             belt: None,
             foot: None,
         },
+        q: Ability {
+            cooldown: 1.,
+            last_use: None,
+        },
     };
 
-    let mut off_x = 0.;
-    let mut off_y = 0.;
     let mut cam_w = screen_width();
     let mut cam_h = screen_height();
     if cam_w > world.dim.x {
-        off_x = (cam_w - world.dim.x) / 2.;
         cam_w = world.dim.x
     }
     if cam_h > world.dim.y {
-        off_y = (cam_h - world.dim.y) / 2.;
         cam_h = world.dim.y
     }
     let camera = GameCamera {
@@ -148,13 +179,13 @@ async fn main() {
     game.add_enemy(create_enemy("Spider".to_string(), vec2(800., 200.), &res));
     game.add_enemy(create_enemy("Spider".to_string(), vec2(800., 500.), &res));
     game.add_enemy(create_enemy("Fox".to_string(), vec2(600., 300.), &res));
+    game.add_enemy(create_enemy("Nexus".to_string(), vec2(900., 600.), &res));
 
     loop {
         // draw everything
         clear_background(RED);
 
-        let game_off_x = -game.camera.pos.x + off_x;
-        let game_off_y = -game.camera.pos.y + off_y;
+        let game_off = game.offset();
 
         for y in 0..game.lvl.height {
             for x in 0..game.lvl.width {
@@ -166,8 +197,8 @@ async fn main() {
                         if let Some(tex) = tex {
                             draw_texture(
                                 tex,
-                                x as f32 * TILE_SIZE + game_off_x,
-                                y as f32 * TILE_SIZE + game_off_y,
+                                x as f32 * TILE_SIZE + game_off.x,
+                                y as f32 * TILE_SIZE + game_off.y,
                                 WHITE,
                             );
                         }
@@ -181,20 +212,15 @@ async fn main() {
 
         // draw enemies
         for enemy in &mut game.enemies {
-            if !game.lvl.is_fog_of_war_at(enemy.pos) {
-                draw_frame(
-                    &enemy.sprite.frames[enemy.sprite.frame_index],
-                    enemy.pos.x - (enemy.dim.x / 2.) + game_off_x,
-                    enemy.pos.y - (enemy.dim.y / 2.) + game_off_y,
-                );
-            }
+            let is_in_fog = game.lvl.is_fog_of_war_at(enemy.pos);
+            draw_enemy(enemy, game_off, is_in_fog)
         }
 
         // draw player
         draw_frame(
             &game.player.sprite.frame,
-            game.player.pos.x - (game.player.dim.x / 2.) + game_off_x,
-            game.player.pos.y - (game.player.dim.y / 2.) + game_off_y,
+            game.player.pos.x - (game.player.dim.x / 2.) + game_off.x,
+            game.player.pos.y - (game.player.dim.y / 2.) + game_off.y,
         );
 
         // draw fog
@@ -206,16 +232,16 @@ async fn main() {
                     FogLevel::Opaque => {
                         draw_texture(
                             &fog,
-                            x as f32 * TILE_SIZE + game_off_x,
-                            y as f32 * TILE_SIZE + game_off_y,
+                            x as f32 * TILE_SIZE + game_off.x,
+                            y as f32 * TILE_SIZE + game_off.y,
                             WHITE,
                         );
                     }
                     FogLevel::HalfTransparent => {
                         draw_texture(
                             &fog_half_transparent,
-                            x as f32 * TILE_SIZE + game_off_x,
-                            y as f32 * TILE_SIZE + game_off_y,
+                            x as f32 * TILE_SIZE + game_off.x,
+                            y as f32 * TILE_SIZE + game_off.y,
                             WHITE,
                         );
                     }
@@ -228,9 +254,27 @@ async fn main() {
 
         // debug player position
         draw_text(
-            format!("{} {}", game.player.pos.x, game.player.pos.y).as_str(),
+            format!("{:?}", game.player.pos).as_str(),
             20.0,
             20.0,
+            30.0,
+            DARKGRAY,
+        );
+
+        // debug mouse position
+        draw_text(
+            format!("{:?}", game.controls.mouse_pos).as_str(),
+            20.0,
+            40.0,
+            30.0,
+            DARKGRAY,
+        );
+
+        // debug enemy* count (incl. projectiles)
+        draw_text(
+            format!("{:?}", game.enemies.len()).as_str(),
+            20.0,
+            60.0,
             30.0,
             DARKGRAY,
         );
@@ -255,8 +299,8 @@ async fn main() {
             if let Some(idx) = game.lvl.tile_index_above(idx) {
                 let pos = game.lvl.pos_by_index(idx);
                 draw_rectangle_lines(
-                    pos.x * TILE_SIZE + game_off_x,
-                    pos.y * TILE_SIZE + game_off_y,
+                    pos.x * TILE_SIZE + game_off.x,
+                    pos.y * TILE_SIZE + game_off.y,
                     TILE_SIZE,
                     TILE_SIZE,
                     3.,
@@ -266,8 +310,8 @@ async fn main() {
             if let Some(idx) = game.lvl.tile_index_below(idx) {
                 let pos = game.lvl.pos_by_index(idx);
                 draw_rectangle_lines(
-                    pos.x * TILE_SIZE + game_off_x,
-                    pos.y * TILE_SIZE + game_off_y,
+                    pos.x * TILE_SIZE + game_off.x,
+                    pos.y * TILE_SIZE + game_off.y,
                     TILE_SIZE,
                     TILE_SIZE,
                     3.,
@@ -277,8 +321,8 @@ async fn main() {
             if let Some(idx) = game.lvl.tile_index_left(idx) {
                 let pos = game.lvl.pos_by_index(idx);
                 draw_rectangle_lines(
-                    pos.x * TILE_SIZE + game_off_x,
-                    pos.y * TILE_SIZE + game_off_y,
+                    pos.x * TILE_SIZE + game_off.x,
+                    pos.y * TILE_SIZE + game_off.y,
                     TILE_SIZE,
                     TILE_SIZE,
                     3.,
@@ -288,8 +332,8 @@ async fn main() {
             if let Some(idx) = game.lvl.tile_index_right(idx) {
                 let pos = game.lvl.pos_by_index(idx);
                 draw_rectangle_lines(
-                    pos.x * TILE_SIZE + game_off_x,
-                    pos.y * TILE_SIZE + game_off_y,
+                    pos.x * TILE_SIZE + game_off.x,
+                    pos.y * TILE_SIZE + game_off.y,
                     TILE_SIZE,
                     TILE_SIZE,
                     3.,
@@ -299,7 +343,7 @@ async fn main() {
         }
 
         // handle input
-        game.update();
+        game.update(&res);
 
         next_frame().await
     }

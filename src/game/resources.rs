@@ -6,8 +6,9 @@ use macroquad::{
 };
 use serde::{Deserialize, Serialize};
 
+// like Vec2, only needed for de/serialization
 #[derive(Serialize, Deserialize)]
-pub struct EnemySpriteFrameDefinition {
+pub struct Point {
     pub x: f32,
     pub y: f32,
 }
@@ -15,7 +16,7 @@ pub struct EnemySpriteFrameDefinition {
 #[derive(Serialize, Deserialize)]
 pub struct EnemySpriteDefinition {
     pub texture: String,
-    pub frames: Vec<EnemySpriteFrameDefinition>,
+    pub frames: Vec<Point>,
     pub fps: u8,
 }
 
@@ -26,6 +27,9 @@ pub struct EnemyDefinition {
     pub speed: f32,
     pub speed_solid: f32,
     pub sprite: EnemySpriteDefinition,
+    pub dim: Point,
+    pub fog_of_war: bool,
+    pub hp_max: usize,
 }
 
 #[derive(Serialize, Deserialize)]

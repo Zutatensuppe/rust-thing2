@@ -1,11 +1,27 @@
 use macroquad::prelude::*;
 
 use super::{
-    enemy::Enemy,
+    enemy::{Enemy, EnemyStrategy},
     entity::{collides, Entity},
     gfx::StaticSprite,
     inventory::Inventory,
+    util::calc_diag_speed,
 };
+
+pub struct Ability {
+    pub cooldown: f64,
+    pub last_use: Option<f64>,
+}
+
+impl Ability {
+    pub fn is_on_cooldown(&self, time: f64) -> bool {
+        if self.last_use.is_some() {
+            let cooldown_end = self.last_use.unwrap() + self.cooldown;
+            return cooldown_end > time;
+        }
+        false
+    }
+}
 
 pub struct Player<'a> {
     pub pos: Vec2,
@@ -13,6 +29,8 @@ pub struct Player<'a> {
     pub light_radius: usize,
     pub sprite: StaticSprite<'a>,
     pub inventory: Inventory,
+
+    pub q: Ability,
 }
 
 impl<'a> Entity for Player<'a> {
@@ -27,6 +45,9 @@ impl<'a> Entity for Player<'a> {
 
 fn collides_any(player: &Player, enemies: &Vec<Enemy>) -> bool {
     for enemy in enemies {
+        if matches!(enemy.strategy, EnemyStrategy::Projectile) {
+            continue;
+        }
         if collides(player, enemy) {
             return true;
         }
@@ -46,7 +67,7 @@ impl<'a> super::Game<'a> {
             (controls.is_right || controls.is_left) && (controls.is_up || controls.is_down);
 
         let norm_speed = 5.;
-        let diag_speed = f32::sqrt((norm_speed * norm_speed) / 2.);
+        let diag_speed = calc_diag_speed(norm_speed);
         let effective_speed = if is_diag { diag_speed } else { norm_speed };
 
         let mut speed = vec2(0., 0.);
