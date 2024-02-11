@@ -31,6 +31,7 @@ pub struct Player<'a> {
     pub inventory: Inventory,
     pub speed: f32,
 
+    pub auto: Ability,
     pub q: Ability,
 }
 
@@ -64,7 +65,7 @@ impl<'a> super::Game<'a> {
         let controls = &self.controls;
         let lvl = &self.lvl;
 
-        if controls.is_mouse_right {
+        if controls.is_right_mouse_click {
             player.target_pos = Some(self.controls.mouse_pos);
         }
 

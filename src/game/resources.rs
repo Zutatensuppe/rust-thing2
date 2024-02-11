@@ -40,6 +40,20 @@ pub struct TileDefinition {
     pub solid: bool,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct LevelEnemyDefinition {
+    pub name: String,
+    pub x: f32,
+    pub y: f32,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct LevelDefinition {
+    pub tiles: Vec<String>,
+    pub player: Point,
+    pub enemies: Vec<LevelEnemyDefinition>,
+}
+
 pub struct Resources {
     pub enemy_definitions: HashMap<String, EnemyDefinition>,
     pub tile_defintions: HashMap<char, TileDefinition>,
@@ -60,6 +74,11 @@ pub async fn load_tile_definitions() -> HashMap<char, TileDefinition> {
     defs.into_iter()
         .map(|def| (def.ch, def))
         .collect::<HashMap<char, TileDefinition>>()
+}
+
+pub async fn load_level_definition(path: &str) -> LevelDefinition {
+    let json_string = load_string(path).await.unwrap();
+    serde_json::from_str(&json_string).unwrap()
 }
 
 impl Resources {

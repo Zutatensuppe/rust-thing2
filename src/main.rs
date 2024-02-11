@@ -9,7 +9,9 @@ use game::gfx::{Frame, StaticSprite};
 use game::inventory::Inventory;
 use game::level::{FogLevel, Level, World, TILE_SIZE};
 use game::player::{Ability, Player};
-use game::resources::{load_enemy_definitions, load_tile_definitions, Resources};
+use game::resources::{
+    load_enemy_definitions, load_level_definition, load_tile_definitions, Resources,
+};
 use game::Game;
 use macroquad::prelude::*;
 
@@ -72,27 +74,9 @@ fn draw_frame(frame: &Frame, x: f32, y: f32) {
     );
 }
 
-#[macroquad::main(window_conf)]
-async fn main() {
-    let mut res = Resources {
-        enemy_definitions: load_enemy_definitions().await,
-        tile_defintions: load_tile_definitions().await,
-        textures: HashMap::new(),
-    };
-
-    res = res.load_textures().await;
-
-    let fog: Texture2D = load_texture("resources/fog.png").await.unwrap();
-    let fog_half_transparent: Texture2D = load_texture("resources/fog_half_transparent.png")
-        .await
-        .unwrap();
-
-    // let cat: Texture2D = load_texture("resources/cathead.png").await.unwrap();
-
-    let lvl1_string = load_string("resources/level1.txt").await.unwrap();
-
-    let lvl = Level::load_from_string(&lvl1_string);
-
+async fn init_level<'a>(path: &'a str, res: &'a Resources) -> Game<'a> {
+    let lvl_def = load_level_definition(path).await;
+    let lvl = Level::load_from_string(&(lvl_def.tiles.join("\n") + "\n"));
     let world = World {
         dim: vec2(
             (lvl.width as f32) * TILE_SIZE,
@@ -102,19 +86,16 @@ async fn main() {
 
     let controls = Controls {
         mouse_pos: vec2(0., 0.),
-        is_mouse_left: false,
-        is_mouse_right: false,
+        is_left_mouse_click: false,
+        is_right_mouse_click: false,
         is_q: false,
     };
 
     let player = Player {
-        pos: vec2(
-            (world.dim.x + TILE_SIZE) / 2.,
-            (world.dim.y + TILE_SIZE) / 2.,
-        ),
+        pos: vec2(lvl_def.player.x, lvl_def.player.y),
         dim: vec2(TILE_SIZE, TILE_SIZE),
         target_pos: None,
-        speed: 5.,
+        speed: 3.,
         light_radius: 4,
         sprite: StaticSprite {
             frame: Frame {
@@ -146,6 +127,10 @@ async fn main() {
             cooldown: 1.,
             last_use: None,
         },
+        auto: Ability {
+            cooldown: 0.5,
+            last_use: None,
+        },
     };
 
     let mut cam_w = screen_width();
@@ -170,16 +155,29 @@ async fn main() {
         camera,
     };
 
-    game.add_enemy(create_enemy("Blob".to_string(), vec2(200., 200.), &res));
-    game.add_enemy(create_enemy("Blob".to_string(), vec2(200., 300.), &res));
-    game.add_enemy(create_enemy("Blob".to_string(), vec2(600., 200.), &res));
-    game.add_enemy(create_enemy("Blob".to_string(), vec2(700., 500.), &res));
-    game.add_enemy(create_enemy("Spider".to_string(), vec2(400., 200.), &res));
-    game.add_enemy(create_enemy("Spider".to_string(), vec2(500., 200.), &res));
-    game.add_enemy(create_enemy("Spider".to_string(), vec2(800., 200.), &res));
-    game.add_enemy(create_enemy("Spider".to_string(), vec2(800., 500.), &res));
-    game.add_enemy(create_enemy("Fox".to_string(), vec2(600., 300.), &res));
-    game.add_enemy(create_enemy("Nexus".to_string(), vec2(900., 600.), &res));
+    for enemy in lvl_def.enemies {
+        game.add_enemy(create_enemy(enemy.name, vec2(enemy.x, enemy.y), res));
+    }
+
+    game
+}
+
+#[macroquad::main(window_conf)]
+async fn main() {
+    let mut res = Resources {
+        enemy_definitions: load_enemy_definitions().await,
+        tile_defintions: load_tile_definitions().await,
+        textures: HashMap::new(),
+    };
+
+    res = res.load_textures().await;
+
+    let fog: Texture2D = load_texture("resources/fog.png").await.unwrap();
+    let fog_half_transparent: Texture2D = load_texture("resources/fog_half_transparent.png")
+        .await
+        .unwrap();
+
+    let mut game = init_level("resources/level2.json", &res).await;
 
     loop {
         // draw everything

@@ -2,8 +2,8 @@
     {
         "name": "Spider",
         "strategy": "followPlayer",
-        "speed": 1,
-        "speed_solid": 0.5,
+        "speed": 0.8,
+        "speed_solid": 0.4,
         "fog_of_war": true,
         "hp_max": 30,
         "sprite": {
@@ -19,7 +19,7 @@
     {
         "name": "Blob",
         "strategy": "verticalPatrol",
-        "speed": 2,
+        "speed": 1.5,
         "speed_solid": 0,
         "fog_of_war": true,
         "hp_max": 50,
@@ -36,7 +36,7 @@
     {
         "name": "Fox",
         "strategy": "horizontalPatrol",
-        "speed": 3,
+        "speed": 2.2,
         "speed_solid": 0,
         "fog_of_war": true,
         "hp_max": 100,
@@ -80,5 +80,21 @@
             "fps": 1
         },
         "dim": { "x": 16, "y": 8 } 
+    },
+    {
+        "name": "Shot",
+        "strategy": "projectile",
+        "speed": 12,
+        "speed_solid": 12,
+        "fog_of_war": true,
+        "hp_max": 1,
+        "sprite": {
+            "texture": "shot.png", 
+            "frames": [
+                { "x": 0, "y": 0 }
+            ],
+            "fps": 1
+        },
+        "dim": { "x": 8, "y": 8 } 
     }
 ]

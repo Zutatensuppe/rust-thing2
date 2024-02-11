@@ -1,0 +1,29 @@
+{
+    "tiles": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaa",
+        "aaaaaeeeeeeeeeeccccdaaaaa",
+        "aaaaaccccccbbaaccccdaaaaa",
+        "aaacccccccc   accccdaaaaa",
+        "aaacccccccc   acccccccaaa",
+        "aaaaacccc       dcccaaaaa",
+        "aaccccccccccccccccccaaaaa",
+        "aaaaaccccc     dccccaaaaa",
+        "aaaaaccccc     dccccaaaaa",
+        "aaaaacccccccccccccccccaaa",
+        "aaaaaaaaaaaaaaaaaaaaaaaaa"
+    ],
+    "player": {
+        "x": 120,
+        "y": 120
+    },
+    "enemies": [
+        { "name": "Blob", "x": 200, "y": 200 },
+        { "name": "Blob", "x": 200, "y": 300 },
+        { "name": "Blob", "x": 600, "y": 200 },
+        { "name": "Spider", "x": 400, "y": 200 },
+        { "name": "Spider", "x": 500, "y": 200 },
+        { "name": "Spider", "x": 800, "y": 200 },
+        { "name": "Fox", "x": 600, "y": 300 },
+        { "name": "Nexus", "x": 400, "y": 120 }
+    ]
+}

@@ -1,0 +1,46 @@
+{
+    "tiles": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "aaaabbccccccccccccccccccccaaaacccccccaaaaaaa",
+        "bbbeccccccccccccccccccaaaabbbbccdaaaabbbbaaa",
+        "aacecccccccccceeeeeeeeeeeeeeccccdbbbbccccaaa",
+        "aaaeccccccccccccccccccccbbaaccccdccbbaaccaaa",
+        "aaaecccfcbbbbbbbcccccccc   accccdccbbaaccaaa",
+        "aaaecccfcbbbbbbbcccccccc   acccccccbbaaccaaa",
+        "aaaecccfcbbbbbbbcccccc   e   dcccccbbaaccaaa",
+        "aaaecccfcbbbbbbbcdcccc   e   dcccccebaaccaaa",
+        "aaaecccfcccccbbbcdccccc     dccccccebaaccaaa",
+        "aaaacccccccccbbbcdccccc     dccccccebaaccaaa",
+        "aaaacccccccccbbbcdcccccccccccccccccbbaaccaaa",
+        "aaaaaaadddcccbbbcdcccaaaaaaaccccaaaaaaaccaaa",
+        "aaabbbdd    cbbbcdcccccbbbaaccccbbbbbaaccaaa",
+        "aaabbbbc    cbbbcecccbbbbbaaccccbbbbbaaccaaa",
+        "aaaacccccccccbbbceccccccbbaacccccccbbaaccaaa",
+        "aaaaccccccccccccceccccccbbaacffccccbbaaccaaa",
+        "aaaaaaaccccccccccecccaaaaaaaccccaaaaaaaccaaa",
+        "aaaabbbbebbbbbccceccccccbbaacccccccccccccaaa",
+        "aaaabbffffbbbbccceccccccbbaacccddddccccccaaa",
+        "aaaacccfccccccccceccccccbbaacccddddbbaaccaaa",
+        "addddccccaaaaaaaaeaaaaccaaaaaaaaaaaaaaaeaaaa",
+        "addddaaccccccaaaaeaaaccaaaaaaabbbbbbbbccbaaa",
+        "addddaaaaaccccccaaaacccaaaaabbaaaaaaaaaaaaaa",
+        "aaaaaaaaaaaaaaccccccccaaaaaaaaaaaaeaaaaaaaaa",
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    ],
+    "player": {
+        "x": 720,
+        "y": 432
+    },
+    "enemies": [
+        { "name": "Blob", "x": 200, "y": 200 },
+        { "name": "Blob", "x": 200, "y": 300 },
+        { "name": "Blob", "x": 600, "y": 200 },
+        { "name": "Blob", "x": 700, "y": 500 },
+        { "name": "Spider", "x": 400, "y": 200 },
+        { "name": "Spider", "x": 500, "y": 200 },
+        { "name": "Spider", "x": 800, "y": 200 },
+        { "name": "Spider", "x": 800, "y": 500 },
+        { "name": "Fox", "x": 600, "y": 300 },
+        { "name": "Nexus", "x": 900, "y": 600 }
+    ]
+}
