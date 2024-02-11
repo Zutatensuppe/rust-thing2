@@ -22,7 +22,6 @@ pub mod inventory;
 pub mod level;
 pub mod player;
 pub mod resources;
-pub mod util;
 
 pub struct Game<'a> {
     pub lvl: Level,
@@ -34,7 +33,7 @@ pub struct Game<'a> {
 }
 
 impl<'a> Game<'a> {
-    pub fn add_enemy(&mut self, mut enemy: Enemy<'a>) {
+    pub fn add_enemy(&mut self, enemy: Enemy<'a>) {
         self.enemies.push(enemy);
     }
 

@@ -5,7 +5,6 @@ use super::{
     gfx::{AnimatedSprite, Frame},
     level::{Level, TILE_SIZE},
     resources::Resources,
-    util::calc_diag_speed,
 };
 
 pub enum EnemyStrategy {
@@ -117,44 +116,28 @@ impl<'a> super::Game<'a> {
                         } else {
                             enemies[i].speed
                         };
-                        let diag_speed = calc_diag_speed(norm_speed * norm_speed);
 
-                        let is_diag =
-                            enemies[i].pos.x != player.pos.x && enemies[i].pos.y != player.pos.y;
-                        let effective_speed = if is_diag { diag_speed } else { norm_speed };
+                        let dir = (player.pos - enemies[i].pos).normalize();
+                        enemies[i].pos.x += dir.x * norm_speed;
 
-                        let mut speed = vec2(0., 0.);
-                        if enemies[i].pos.x < player.pos.x {
-                            speed.x = effective_speed;
-                        } else if enemies[i].pos.x > player.pos.x {
-                            speed.x = -effective_speed;
-                        }
-
-                        enemies[i].pos += speed;
-
+                        // keep player on non-solid blocks
                         if (!ignore_solid_checks && lvl.is_solid_at(enemies[i].pos))
                             || collides_any(i, enemies).is_some()
                             || collides(player, &enemies[i])
                         {
-                            // put back where they were
-                            enemies[i].pos -= speed;
+                            // put player back where they were
+                            enemies[i].pos.x -= dir.x * norm_speed;
                         }
 
-                        speed.x = 0.;
-                        if enemies[i].pos.y < player.pos.y {
-                            speed.y = effective_speed;
-                        } else if enemies[i].pos.y > player.pos.y {
-                            speed.y = -effective_speed;
-                        }
+                        enemies[i].pos.y += dir.y * norm_speed;
 
-                        enemies[i].pos += speed;
-
+                        // keep player on non-solid blocks
                         if (!ignore_solid_checks && lvl.is_solid_at(enemies[i].pos))
                             || collides_any(i, enemies).is_some()
                             || collides(player, &enemies[i])
                         {
-                            // put back where they were
-                            enemies[i].pos -= speed;
+                            // put player back where they were
+                            enemies[i].pos.y -= dir.y * norm_speed;
                         }
                     }
                 }

@@ -113,7 +113,8 @@ async fn main() {
             (world.dim.y + TILE_SIZE) / 2.,
         ),
         dim: vec2(TILE_SIZE, TILE_SIZE),
-        dir: vec2(0., 0.),
+        target_pos: None,
+        speed: 5.,
         light_radius: 4,
         sprite: StaticSprite {
             frame: Frame {
@@ -277,6 +278,18 @@ async fn main() {
             30.0,
             DARKGRAY,
         );
+
+        if game.player.target_pos.is_some() {
+            let target_pos = game.player.target_pos.unwrap();
+            draw_line(
+                game.player.pos.x + game_off.x,
+                game.player.pos.y + game_off.y,
+                target_pos.x + game_off.x,
+                target_pos.y + game_off.y,
+                1.0,
+                ORANGE,
+            )
+        }
 
         // debug tiles in each direction of player tile
         let idx = game.lvl.tile_index_at(game.player.pos);
