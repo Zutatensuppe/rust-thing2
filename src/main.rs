@@ -101,12 +101,10 @@ async fn main() {
     };
 
     let controls = Controls {
-        is_up: false,
-        is_down: false,
-        is_left: false,
-        is_right: false,
-        is_q: false,
         mouse_pos: vec2(0., 0.),
+        is_mouse_left: false,
+        is_mouse_right: false,
+        is_q: false,
     };
 
     let player = Player {
@@ -115,6 +113,7 @@ async fn main() {
             (world.dim.y + TILE_SIZE) / 2.,
         ),
         dim: vec2(TILE_SIZE, TILE_SIZE),
+        dir: vec2(0., 0.),
         light_radius: 4,
         sprite: StaticSprite {
             frame: Frame {
@@ -278,20 +277,6 @@ async fn main() {
             30.0,
             DARKGRAY,
         );
-
-        // debug pressed direction keys
-        if game.controls.is_right {
-            draw_text(">", 60.0, 60.0, 30.0, ORANGE);
-        }
-        if game.controls.is_left {
-            draw_text("<", 20.0, 60.0, 30.0, ORANGE);
-        }
-        if game.controls.is_up {
-            draw_text("^", 40.0, 40.0, 30.0, ORANGE);
-        }
-        if game.controls.is_down {
-            draw_text("V", 40.0, 60.0, 30.0, ORANGE);
-        }
 
         // debug tiles in each direction of player tile
         let idx = game.lvl.tile_index_at(game.player.pos);

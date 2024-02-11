@@ -26,6 +26,7 @@ impl Ability {
 pub struct Player<'a> {
     pub pos: Vec2,
     pub dim: Vec2,
+    pub dir: Vec2,
     pub light_radius: usize,
     pub sprite: StaticSprite<'a>,
     pub inventory: Inventory,
@@ -57,47 +58,35 @@ fn collides_any(player: &Player, enemies: &Vec<Enemy>) -> bool {
 
 impl<'a> super::Game<'a> {
     pub(super) fn update_player(&mut self) {
+        // TODO: dont hardcode speed
+        let norm_speed = 3.;
+
         let player = &mut self.player;
         let enemies = &self.enemies;
 
         let controls = &self.controls;
         let lvl = &self.lvl;
 
-        let is_diag =
-            (controls.is_right || controls.is_left) && (controls.is_up || controls.is_down);
+        if controls.is_mouse_right {
+            player.dir = (self.controls.mouse_pos - player.pos).normalize();
 
-        let norm_speed = 5.;
-        let diag_speed = calc_diag_speed(norm_speed);
-        let effective_speed = if is_diag { diag_speed } else { norm_speed };
+            player.pos.x += player.dir.x * norm_speed;
 
-        let mut speed = vec2(0., 0.);
-        if controls.is_right {
-            speed.x = effective_speed;
-        } else if controls.is_left {
-            speed.x = -effective_speed;
-        }
+            // keep player on non-solid blocks
+            if lvl.is_solid_at(player.pos) || collides_any(player, enemies) {
+                // put player back where they were
+                player.pos.x -= player.dir.x * norm_speed;
+            }
 
-        player.pos += speed;
+            player.pos.y += player.dir.y * norm_speed;
 
-        // keep player on non-solid blocks
-        if lvl.is_solid_at(player.pos) || collides_any(player, enemies) {
-            // put player back where they were
-            player.pos -= speed;
-        }
-
-        speed.x = 0.;
-        if controls.is_up {
-            speed.y = -effective_speed;
-        } else if controls.is_down {
-            speed.y = effective_speed;
-        }
-
-        player.pos += speed;
-
-        // keep player on non-solid blocks
-        if lvl.is_solid_at(player.pos) || collides_any(player, enemies) {
-            // put player back where they were
-            player.pos -= speed;
+            // keep player on non-solid blocks
+            if lvl.is_solid_at(player.pos) || collides_any(player, enemies) {
+                // put player back where they were
+                player.pos.y -= player.dir.y * norm_speed;
+            }
+        } else {
+            // dont move
         }
     }
 }
