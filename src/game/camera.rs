@@ -1,7 +1,5 @@
 use macroquad::prelude::*;
 
-use super::{level::World, player::Player};
-
 pub struct GameCamera {
     pub pos: Vec2,
     pub dim: Vec2,

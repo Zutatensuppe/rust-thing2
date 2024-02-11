@@ -8,6 +8,7 @@ use super::{
 };
 
 pub struct Ability {
+    pub name: String,
     pub cooldown: f64,
     pub last_use: Option<f64>,
 }
@@ -20,6 +21,14 @@ impl Ability {
         }
         false
     }
+
+    pub fn cooldown_left(&self, time: f64) -> f64 {
+        if self.last_use.is_some() {
+            let cooldown_end = self.last_use.unwrap() + self.cooldown;
+            return cooldown_end - time;
+        }
+        0.0
+    }
 }
 
 pub struct Player<'a> {
@@ -30,6 +39,8 @@ pub struct Player<'a> {
     pub sprite: StaticSprite<'a>,
     pub inventory: Inventory,
     pub speed: f32,
+    pub hp: usize,
+    pub hp_max: usize,
 
     pub auto: Ability,
     pub q: Ability,

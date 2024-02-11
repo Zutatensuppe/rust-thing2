@@ -5,6 +5,7 @@
         "speed": 0.8,
         "speed_solid": 0.4,
         "fog_of_war": true,
+        "damage": 3,
         "hp_max": 30,
         "sprite": {
             "texture": "sprites_for_para.png", 
@@ -22,6 +23,7 @@
         "speed": 1.5,
         "speed_solid": 0,
         "fog_of_war": true,
+        "damage": 3,
         "hp_max": 50,
         "sprite": {
             "texture": "sprites_for_para.png", 
@@ -39,6 +41,7 @@
         "speed": 2.2,
         "speed_solid": 0,
         "fog_of_war": true,
+        "damage": 4,
         "hp_max": 100,
         "sprite": {
             "texture": "sprites_for_para.png", 
@@ -55,6 +58,7 @@
         "speed": 0,
         "speed_solid": 0,
         "fog_of_war": false,
+        "damage": 0,
         "hp_max": 1000,
         "sprite": {
             "texture": "nexus.png", 
@@ -71,6 +75,7 @@
         "speed": 10,
         "speed_solid": 10,
         "fog_of_war": true,
+        "damage": 15,
         "hp_max": 1,
         "sprite": {
             "texture": "rocket.png", 
@@ -87,6 +92,7 @@
         "speed": 12,
         "speed_solid": 12,
         "fog_of_war": true,
+        "damage": 3,
         "hp_max": 1,
         "sprite": {
             "texture": "shot.png", 

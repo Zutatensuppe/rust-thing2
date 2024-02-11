@@ -23,6 +23,19 @@ pub mod level;
 pub mod player;
 pub mod resources;
 
+pub enum GameState {
+    MainMenu,
+    InGame,
+    PostGame,
+}
+
+pub struct GameStats {
+    pub damage_dealt: usize,
+    pub damage_received: usize,
+    pub enemies_killed: usize,
+    pub time_spent: f64,
+}
+
 pub struct Game<'a> {
     pub lvl: Level,
     pub player: Player<'a>,
@@ -30,6 +43,7 @@ pub struct Game<'a> {
     pub world: World,
     pub controls: Controls,
     pub camera: GameCamera,
+    pub stats: GameStats,
 }
 
 impl<'a> Game<'a> {

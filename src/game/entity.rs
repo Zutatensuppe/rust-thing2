@@ -1,5 +1,7 @@
 use macroquad::math::{Rect, Vec2};
 
+use super::level::{Level, TILE_SIZE};
+
 pub trait Entity {
     fn pos(&self) -> Vec2;
     fn dim(&self) -> Vec2;
@@ -25,4 +27,12 @@ pub fn collides(entity1: &dyn Entity, entity2: &dyn Entity) -> bool {
     };
 
     rect1.overlaps(&rect2)
+}
+
+pub fn is_out_of_lvl_bounds(entity: &dyn Entity, lvl: &Level) -> bool {
+    let pos = entity.pos();
+    pos.x < 0.
+        || pos.y < 0.
+        || pos.x > (lvl.width as f32) * TILE_SIZE
+        || pos.y > (lvl.height as f32) * TILE_SIZE
 }

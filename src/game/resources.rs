@@ -29,6 +29,7 @@ pub struct EnemyDefinition {
     pub sprite: EnemySpriteDefinition,
     pub dim: Point,
     pub fog_of_war: bool,
+    pub damage: usize,
     pub hp_max: usize,
 }
 
