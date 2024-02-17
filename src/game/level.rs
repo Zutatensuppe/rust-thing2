@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use macroquad::prelude::*;
 
 use super::Game;
@@ -20,7 +22,7 @@ pub struct Tile {
 }
 
 impl Tile {
-    fn from_char(ch: char) -> Self {
+    pub fn from_char(ch: char) -> Self {
         Self {
             fog: FogLevel::Opaque,
             solid: !matches!(ch, 'c' | 'd' | 'e' | 'f'),
@@ -29,10 +31,31 @@ impl Tile {
     }
 }
 
+pub struct Room {
+    pub x: usize,
+    pub y: usize,
+    pub w: usize,
+    pub h: usize,
+
+    // indexes of other rooms where this room (directly or indirectly) connects
+    // to
+    pub connections: HashMap<usize, bool>,
+}
+
+impl Room {
+    pub fn center(&self) -> Vec2 {
+        vec2(
+            self.x as f32 + self.w as f32 / 2.,
+            self.y as f32 + self.h as f32 / 2.,
+        )
+    }
+}
+
 pub struct Level {
     pub width: usize,
     pub height: usize,
     pub tiles: Vec<Tile>,
+    pub rooms: Vec<Room>,
 }
 
 impl Level {
@@ -53,6 +76,7 @@ impl Level {
             width: tiles.len() / height,
             height,
             tiles,
+            rooms: vec![],
         }
     }
 

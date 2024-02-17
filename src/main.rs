@@ -8,9 +8,11 @@ use game::enemy::{count_nexus, create_enemy, Enemy, EnemyStrategy};
 use game::gfx::{Frame, StaticSprite};
 use game::inventory::Inventory;
 use game::level::{FogLevel, Level, World, TILE_SIZE};
+use game::level_generator::generate_level;
 use game::player::{Ability, Player};
 use game::resources::{
-    load_enemy_definitions, load_level_definition, load_tile_definitions, Resources,
+    load_enemy_definitions, load_level_definition, load_tile_definitions, LevelDefinition,
+    LevelEnemyDefinition, Point, Resources,
 };
 use game::{Game, GameState, GameStats};
 use macroquad::prelude::*;
@@ -296,11 +298,43 @@ fn draw_debug(game: &Game, game_off: Vec2) {
             );
         }
     }
+
+    for i in 0..game.lvl.rooms.len() {
+        let center = game.lvl.rooms[i].center();
+        draw_text(
+            format!("R{}", i).as_str(),
+            center.x * TILE_SIZE + game_off.x,
+            center.y * TILE_SIZE + game_off.y,
+            60.,
+            WHITE,
+        );
+    }
 }
 
-async fn init_level<'a>(path: &'a str, res: &'a Resources) -> Game<'a> {
-    let lvl_def = load_level_definition(path).await;
-    let lvl = Level::load_from_string(&(lvl_def.tiles.join("\n") + "\n"));
+async fn init_level<'a>(name: &'a str, res: &'a Resources) -> Game<'a> {
+    let lvl_def: LevelDefinition;
+    let lvl: Level;
+    if name.is_empty() {
+        lvl = generate_level(40, 150, 20);
+        let start = lvl.rooms[0].center();
+        let end = lvl.rooms[lvl.rooms.len() - 1].center();
+        lvl_def = LevelDefinition {
+            tiles: vec![],
+            player: Point {
+                x: start.x * TILE_SIZE,
+                y: start.y * TILE_SIZE,
+            },
+            enemies: vec![LevelEnemyDefinition {
+                name: "Nexus".to_string(),
+                x: end.x * TILE_SIZE,
+                y: end.y * TILE_SIZE,
+            }],
+        };
+    } else {
+        lvl_def = load_level_definition(name).await;
+        lvl = Level::load_from_string(&(lvl_def.tiles.join("\n") + "\n"))
+    };
+
     let world = World {
         dim: vec2(
             (lvl.width as f32) * TILE_SIZE,
@@ -312,6 +346,7 @@ async fn init_level<'a>(path: &'a str, res: &'a Resources) -> Game<'a> {
         mouse_pos: vec2(0., 0.),
         is_left_mouse_click: false,
         is_right_mouse_click: false,
+        is_right_mouse_down: false,
         is_q: false,
     };
 
@@ -413,7 +448,7 @@ async fn main() {
 
     let mut state = GameState::MainMenu;
 
-    let levels = ["resources/level1.json", "resources/level2.json"];
+    let levels = []; // ["resources/level1.json", "resources/level2.json"];
     let mut level_idx = 0;
     let mut option_game = None;
 
@@ -423,7 +458,12 @@ async fn main() {
     loop {
         let time = get_time();
         if option_game.is_none() {
-            option_game = Some(init_level(levels[level_idx], &res).await);
+            let level_name = if level_idx < levels.len() {
+                levels[level_idx]
+            } else {
+                ""
+            };
+            option_game = Some(init_level(level_name, &res).await);
         }
 
         let game = option_game.as_mut().unwrap();

@@ -76,7 +76,7 @@ impl<'a> super::Game<'a> {
         let controls = &self.controls;
         let lvl = &self.lvl;
 
-        if controls.is_right_mouse_click {
+        if controls.is_right_mouse_click || controls.is_right_mouse_down {
             player.target_pos = Some(self.controls.mouse_pos);
         }
 

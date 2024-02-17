@@ -20,6 +20,7 @@ pub mod entity;
 pub mod gfx;
 pub mod inventory;
 pub mod level;
+pub mod level_generator;
 pub mod player;
 pub mod resources;
 
@@ -67,7 +68,9 @@ impl<'a> Game<'a> {
         }
 
         let enemy_idx = self.get_enemy_index_at_pos(self.controls.mouse_pos);
-        if self.controls.is_right_mouse_click && enemy_idx.is_some() {
+        if (self.controls.is_right_mouse_click || self.controls.is_right_mouse_down)
+            && enemy_idx.is_some()
+        {
             if !self.player.auto.is_on_cooldown(time) {
                 let mut shot = create_enemy("Shot".to_string(), self.player.pos, res);
                 shot.dir = (self.enemies[enemy_idx.unwrap()].pos - self.player.pos).normalize();
